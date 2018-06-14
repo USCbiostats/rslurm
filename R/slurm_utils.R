@@ -73,5 +73,5 @@ wait_for_job <- function(slr_job) {
             slr_job$jobname)
         system(srun)
     }
-    return()
+    invisible()
 }

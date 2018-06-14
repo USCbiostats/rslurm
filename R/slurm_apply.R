@@ -99,19 +99,23 @@ slurm_apply <- function(f, params, jobname = NA, nodes = 2, cpus_per_node = 2,
         stop("cpus_per_node should be a single number")
     }
 
+    temp_path <- getwd()
     jobname <- make_jobname(jobname)
-
+    
     # Create temp folder
-    tmpdir <- paste0("_rslurm_", jobname)
+    tmpdir <- sprintf("%s/%s", temp_path, paste0("_rslurm_", jobname))
     dir.create(tmpdir, showWarnings = FALSE)
 
     saveRDS(params, file = file.path(tmpdir, "params.RDS"))
     saveRDS(f, file = file.path(tmpdir, "f.RDS"))
-    if (!is.null(add_objects)) {
-        save(list = add_objects,
-             file = file.path(tmpdir, "add_objects.RData"),
-             envir = environment(f))
-    }    
+    
+    if (!is.null(add_objects)) 
+        save(
+            list = add_objects,
+            file = file.path(tmpdir, "add_objects.RData"),
+            envir = environment(f)
+            )
+    
     
     # Get chunk size (nb. of param. sets by node)
     # Special case if less param. sets than CPUs in cluster
@@ -126,25 +130,41 @@ slurm_apply <- function(f, params, jobname = NA, nodes = 2, cpus_per_node = 2,
     # Create a R script to run function in parallel on each node
     template_r <- readLines(system.file("templates/slurm_run_R.txt",
                                         package = "rslurm"))
-    script_r <- whisker::whisker.render(template_r,
-                    list(pkgs = pkgs,
-                         add_obj = !is.null(add_objects),
-                         nchunk = nchunk,
-                         cpus_per_node = cpus_per_node,
-                         libPaths = libPaths))
+    script_r <- whisker::whisker.render(
+        template_r,
+        list(
+            pkgs          = pkgs,
+            add_obj       = !is.null(add_objects),
+            nchunk        = nchunk,
+            cpus_per_node = cpus_per_node,
+            libPaths      = libPaths,
+            tmpdir        = tmpdir
+            )
+        )
+    
     writeLines(script_r, file.path(tmpdir, "slurm_run.R"))
 
     # Create submission bash script
-    template_sh <- readLines(system.file("templates/submit_sh.txt",
-                                         package = "rslurm"))
+    template_sh <- readLines(
+        system.file("templates/submit_sh.txt", package = "rslurm")
+        )
+    
     slurm_options <- format_option_list(slurm_options)
+    
     rscript_path <- file.path(R.home("bin"), "Rscript")
-    script_sh <- whisker::whisker.render(template_sh,
-                    list(max_node = nodes - 1,
-                         jobname = jobname,
-                         flags = slurm_options$flags,
-                         options = slurm_options$options,
-                         rscript = rscript_path))
+    
+    script_sh <- whisker::whisker.render(
+        template_sh,
+        list(
+            max_node = nodes - 1,
+            jobname  = jobname,
+            flags    = slurm_options$flags,
+            options  = slurm_options$options,
+            rscript  = rscript_path,
+            tmpdir   = tmpdir
+            )
+        )
+    
     writeLines(script_sh, file.path(tmpdir, "submit.sh"))
 
     # Submit job to Slurm if applicable

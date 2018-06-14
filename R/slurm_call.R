@@ -60,53 +60,81 @@
 #'   \code{\link{get_slurm_out}} and \code{\link{print_job_status}} which use
 #'   the output of this function.
 #' @export
-slurm_call <- function(f, params, jobname = NA, add_objects = NULL, 
-                       pkgs = rev(.packages()), libPaths = NULL,
-                       slurm_options = list(), submit = TRUE) {
+slurm_call <- function(
+    f, 
+    params, 
+    jobname       = NA, 
+    add_objects   = NULL, 
+    pkgs          = rev(.packages()), 
+    libPaths      = NULL,
+    slurm_options = list(), 
+    submit        = TRUE
+    ) {
+    
     # Check inputs
     if (!is.function(f)) {
-        stop("first argument to slurm_call should be a function")
+        stop("first argument to slurm_call should be a function", call. = FALSE)
     }
     if (!is.list(params)) {
-        stop("second argument to slurm_call should be a list")
+        stop("second argument to slurm_call should be a list", call. = FALSE)
     }
     if (is.null(names(params)) || !(names(params) %in% names(formals(f)))) {
-        stop("names of params must match arguments of f")
+        stop("names of params must match arguments of f", call. = FALSE)
     }
         
+    temp_path <- getwd()
     jobname <- make_jobname(jobname)
     
     # Create temp folder
-    tmpdir <- paste0("_rslurm_", jobname)
+    tmpdir <- sprintf("%s/%s", temp_path, paste0("_rslurm_", jobname))
     dir.create(tmpdir, showWarnings = FALSE)
     
     saveRDS(params, file = file.path(tmpdir, "params.RDS"))
     saveRDS(f, file = file.path(tmpdir, "f.RDS"))
-    if (!is.null(add_objects)) {
-        save(list = add_objects,
-             file = file.path(tmpdir, "add_objects.RData"),
-             envir = environment(f))
-    }    
+    
+    if (!is.null(add_objects)) 
+        save(
+            list  = add_objects,
+            file  = file.path(tmpdir, "add_objects.RData"),
+            envir = environment(f)
+            )
     
     # Create a R script to run function on cluster
-    template_r <- readLines(system.file("templates/slurm_run_single_R.txt", 
-                                        package = "rslurm"))
-    script_r <- whisker::whisker.render(template_r,
-                    list(pkgs = pkgs,
-                         add_obj = !is.null(add_objects),
-                         libPaths = libPaths))
+    template_r <- readLines(
+        system.file(
+            "templates/slurm_run_single_R.txt", package = "rslurm")
+        )
+    
+    script_r <- whisker::whisker.render(
+        template_r,
+        list(
+            pkgs     = pkgs,
+            add_obj  = !is.null(add_objects),
+            libPaths = libPaths,
+            tmpdir   = tmpdir
+            )
+        )
+    
     writeLines(script_r, file.path(tmpdir, "slurm_run.R"))
     
     # Create submission bash script
-    template_sh <- readLines(system.file("templates/submit_single_sh.txt", 
-                                         package = "rslurm"))
+    template_sh <- readLines(
+        system.file("templates/submit_single_sh.txt",  package = "rslurm")
+        )
+    
     slurm_options <- format_option_list(slurm_options)
-    rscript_path <- file.path(R.home("bin"), "Rscript")
-    script_sh <- whisker::whisker.render(template_sh, 
-                                         list(jobname = jobname,
-                                              flags = slurm_options$flags, 
-                                              options = slurm_options$options,
-                                              rscript = rscript_path))
+    rscript_path  <- file.path(R.home("bin"), "Rscript")
+    
+    script_sh <- whisker::whisker.render(
+        template_sh, 
+        list(
+            jobname = jobname,
+            flags = slurm_options$flags, 
+            options = slurm_options$options,
+            rscript = rscript_path,
+            tmpdir   = tmpdir
+            )
+        )
     writeLines(script_sh, file.path(tmpdir, "submit.sh"))
     
     # Submit job to Slurm if applicable
