@@ -18,4 +18,8 @@ files.
 }
 \seealso{
 \code{\link{cleanup_files}}
+
+Other Utility functions: \code{\link{cleanup_files}},
+  \code{\link{print.slurm_job}}
 }
+\concept{Utility functions}

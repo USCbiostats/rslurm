@@ -21,11 +21,15 @@ working directory.
 \examples{
 \dontrun{
 sjob <- slurm_apply(func, pars)
-print_job_status(sjob) # Prints console/error output once job is completed.
+sjob # Prints console/error output once job is completed.
 func_result <- get_slurm_out(sjob, "table") # Loads output data into R.
 cleanup_files(sjob)
 }
 }
 \seealso{
 \code{\link{slurm_apply}}, \code{\link{slurm_call}}
+
+Other Utility functions: \code{\link{cancel_slurm}},
+  \code{\link{print.slurm_job}}
 }
+\concept{Utility functions}

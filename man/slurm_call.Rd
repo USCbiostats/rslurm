@@ -80,6 +80,6 @@ description of the related functions for more details.
   set.
 
 \code{\link{cancel_slurm}}, \code{\link{cleanup_files}}, 
-  \code{\link{get_slurm_out}} and \code{\link{print_job_status}} which use
+  \code{\link{get_slurm_out}} and \code{\link{print.slurm_job}} which use
   the output of this function.
 }

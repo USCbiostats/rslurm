@@ -5,7 +5,7 @@
 #' (if "table" format selected) or list (if "raw" format selected). It doesn't 
 #' record any messages (including warnings or errors) output to the R console
 #' during the computation; these can be consulted by invoking 
-#' \code{\link{print_job_status}}.
+#' \code{\link{print.slurm_job}}.
 #' 
 #' The \code{outtype} option is only relevant for jobs submitted with 
 #' \code{slurm_apply}. Jobs sent with \code{slurm_call} only return a single

@@ -93,7 +93,7 @@ the description of the related functions for more details.
 \examples{
 \dontrun{
 sjob <- slurm_apply(func, pars)
-print_job_status(sjob) # Prints console/error output once job is completed.
+print.slurm_job(sjob) # Prints console/error output once job is completed.
 func_result <- get_slurm_out(sjob, "table") # Loads output data into R.
 cleanup_files(sjob)
 }
@@ -102,6 +102,6 @@ cleanup_files(sjob)
 \code{\link{slurm_call}} to evaluate a single function call.
 
 \code{\link{cancel_slurm}}, \code{\link{cleanup_files}},
-  \code{\link{get_slurm_out}} and \code{\link{print_job_status}}
+  \code{\link{get_slurm_out}} and \code{\link{print.slurm_job}}
   which use the output of this function.
 }

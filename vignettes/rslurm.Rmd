@@ -90,7 +90,7 @@ res <- get_slurm_out(sjob, outtype = 'table')
 head(res, 3)
 ```
 
-The utility function `print_job_status` displays the status of a submitted job
+The method `print.slurm_job` displays the status of a submitted job
 (i.e. in queue, running or completed), and `cancel_slurm` will remove a job from
 the queue, aborting its execution if necessary. These functions are R wrappers
 for the Slurm command line functions `squeue` and `scancel`, respectively.
@@ -181,7 +181,7 @@ also generates a R script (`slurm_run.R`) to be run on each cluster node, as
 well as a Bash script (`submit.sh`) to submit the job to Slurm.
 
 More specifically, the Bash script tells Slurm to create a job array and the R
-script takes advantage of the unique `SLURM\_ARRAY\_TASK\_ID` environment
+script takes advantage of the unique `SLURM_ARRAY_TASK_ID` environment
 variable that Slurm will set on each cluster node. This variable is read by
 `slurm_run.R`, which allows each instance of the script to operate on a
 different parameter subset and write its output to a different results file. The

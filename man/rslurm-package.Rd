@@ -22,7 +22,7 @@ using the \code{\link{slurm_call}} or \code{\link{slurm_apply}} functions.
   
   The output of \code{slurm_apply} or \code{slurm_call} is a \code{slurm_job}
   object that serves as an input to the other functions in the package: 
-  \code{\link{print_job_status}}, \code{\link{cancel_slurm}}, 
+  \code{\link{print.slurm_job}}, \code{\link{cancel_slurm}}, 
   \code{\link{get_slurm_out}} and \code{\link{cleanup_files}}.
 }
 
@@ -83,7 +83,7 @@ ftest <- function(par_m, par_sd) {
 }
 
 sjob1 <- slurm_apply(ftest, pars)
-print_job_status(sjob1)
+print(sjob1)
 res <- get_slurm_out(sjob1, "table")
 all.equal(pars, res) # Confirm correct output
 cleanup_files(sjob1)
