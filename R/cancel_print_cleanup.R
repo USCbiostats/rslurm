@@ -37,7 +37,12 @@ cancel_slurm <- function(slr_job) {
 print.slurm_job <- function(x, ...) {
     
     stat <- suppressWarnings(
-        system(paste("squeue -n", x$jobname), intern = TRUE))
+        system(paste("squeue -n", x$jobname), intern = TRUE)
+        )
+    
+    if (stat)
+        stop("The function `squeue` was not found. Is Slurm install in the system?",
+             call. = FALSE)
     
     if (length(stat) > 1) {
         

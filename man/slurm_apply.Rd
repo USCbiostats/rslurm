@@ -6,7 +6,7 @@
 \usage{
 slurm_apply(f, params, jobname = NA, nodes = 2, cpus_per_node = 2,
   add_objects = NULL, pkgs = rev(.packages()), libPaths = NULL,
-  slurm_options = list(), submit = TRUE)
+  slurm_options = list(), submit = TRUE, tmpdir = getwd())
 }
 \arguments{
 \item{f}{A function that accepts one or many single values as parameters and
@@ -45,6 +45,8 @@ Details below for more information.}
 
 \item{submit}{Whether or not to submit the job to the cluster with
 \code{sbatch}; see Details below for more information.}
+
+\item{tmpdir}{Directory where the `_rslurm` project folder wil be created.}
 }
 \value{
 A \code{slurm_job} object containing the \code{jobname} and the
@@ -99,9 +101,10 @@ cleanup_files(sjob)
 }
 }
 \seealso{
-\code{\link{slurm_call}} to evaluate a single function call.
-
 \code{\link{cancel_slurm}}, \code{\link{cleanup_files}},
   \code{\link{get_slurm_out}} and \code{\link{print.slurm_job}}
   which use the output of this function.
+
+Other Slurm calls: \code{\link{slurm_call}}
 }
+\concept{Slurm calls}

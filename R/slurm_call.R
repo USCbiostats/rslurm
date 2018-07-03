@@ -50,12 +50,12 @@
 #'   Non-existent library trees are silently ignored.
 #' @param slurm_options A named list of options recognized by \code{sbatch}; see
 #'   Details below for more information.
+#' @param tmpdir Directory where the `_rslurm` project folder wil be created. 
 #' @param submit Whether or not to submit the job to the cluster with 
 #'   \code{sbatch}; see Details below for more information.
 #' @return A \code{slurm_job} object containing the \code{jobname} and the number
 #'   of \code{nodes} effectively used.
-#' @seealso \code{\link{slurm_apply}} to parallelize a function over a parameter
-#'   set.
+#' @family Slurm calls
 #' @seealso \code{\link{cancel_slurm}}, \code{\link{cleanup_files}}, 
 #'   \code{\link{get_slurm_out}} and \code{\link{print.slurm_job}} which use
 #'   the output of this function.
@@ -68,7 +68,8 @@ slurm_call <- function(
     pkgs          = rev(.packages()), 
     libPaths      = NULL,
     slurm_options = list(), 
-    submit        = TRUE
+    submit        = TRUE,
+    tmpdir        = getwd()
     ) {
     
     # Check inputs
@@ -82,11 +83,13 @@ slurm_call <- function(
         stop("names of params must match arguments of f", call. = FALSE)
     }
         
-    temp_path <- getwd()
+    if (!length(tmpdir))
+        tmpdir <- getwd()
+    
     jobname <- make_jobname(jobname)
     
     # Create temp folder
-    tmpdir <- sprintf("%s/%s", temp_path, paste0("_rslurm_", jobname))
+    tmpdir <- sprintf("%s/%s", tmpdir, paste0("_rslurm_", jobname))
     dir.create(tmpdir, showWarnings = FALSE)
     
     saveRDS(params, file = file.path(tmpdir, "params.RDS"))
@@ -129,10 +132,10 @@ slurm_call <- function(
         template_sh, 
         list(
             jobname = jobname,
-            flags = slurm_options$flags, 
+            flags   = slurm_options$flags, 
             options = slurm_options$options,
             rscript = rscript_path,
-            tmpdir   = tmpdir
+            tmpdir  = tmpdir
             )
         )
     writeLines(script_sh, file.path(tmpdir, "submit.sh"))

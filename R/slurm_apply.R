@@ -65,9 +65,10 @@
 #'   Details below for more information.
 #' @param submit Whether or not to submit the job to the cluster with
 #'   \code{sbatch}; see Details below for more information.
+#' @param tmpdir Directory where the `_rslurm` project folder wil be created. 
 #' @return A \code{slurm_job} object containing the \code{jobname} and the
 #'   number of \code{nodes} effectively used.
-#' @seealso \code{\link{slurm_call}} to evaluate a single function call.
+#' @family Slurm calls
 #' @seealso \code{\link{cancel_slurm}}, \code{\link{cleanup_files}},
 #'   \code{\link{get_slurm_out}} and \code{\link{print.slurm_job}}
 #'   which use the output of this function.
@@ -79,9 +80,20 @@
 #' cleanup_files(sjob)
 #' }
 #' @export
-slurm_apply <- function(f, params, jobname = NA, nodes = 2, cpus_per_node = 2,
-                        add_objects = NULL, pkgs = rev(.packages()),
-                        libPaths = NULL, slurm_options = list(), submit = TRUE) {
+slurm_apply <- function(
+    f,
+    params,
+    jobname       = NA,
+    nodes         = 2,
+    cpus_per_node = 2,
+    add_objects   = NULL,
+    pkgs          = rev(.packages()),
+    libPaths      = NULL,
+    slurm_options = list(),
+    submit        = TRUE,
+    tmpdir        = getwd()
+    ) {
+    
     # Check inputs
     if (!is.function(f)) {
         stop("first argument to slurm_apply should be a function")
@@ -99,11 +111,13 @@ slurm_apply <- function(f, params, jobname = NA, nodes = 2, cpus_per_node = 2,
         stop("cpus_per_node should be a single number")
     }
 
-    temp_path <- getwd()
+    if (!length(tmpdir))
+        tmpdir <- getwd()
+    
     jobname <- make_jobname(jobname)
     
     # Create temp folder
-    tmpdir <- sprintf("%s/%s", temp_path, paste0("_rslurm_", jobname))
+    tmpdir <- sprintf("%s/%s", tmpdir, paste0("_rslurm_", jobname))
     dir.create(tmpdir, showWarnings = FALSE)
 
     saveRDS(params, file = file.path(tmpdir, "params.RDS"))
@@ -124,12 +138,15 @@ slurm_apply <- function(f, params, jobname = NA, nodes = 2, cpus_per_node = 2,
     } else {
         nchunk <- ceiling(nrow(params) / nodes)
     }
+    
     # Re-adjust number of nodes (only matters for small sets)
     nodes <- ceiling(nrow(params) / nchunk)
 
     # Create a R script to run function in parallel on each node
-    template_r <- readLines(system.file("templates/slurm_run_R.txt",
-                                        package = "rslurm"))
+    template_r <- readLines(
+        system.file("templates/slurm_run_R.txt", package = "rslurm")
+        )
+    
     script_r <- whisker::whisker.render(
         template_r,
         list(

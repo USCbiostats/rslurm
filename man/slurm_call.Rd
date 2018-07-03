@@ -6,7 +6,7 @@
 \usage{
 slurm_call(f, params, jobname = NA, add_objects = NULL,
   pkgs = rev(.packages()), libPaths = NULL, slurm_options = list(),
-  submit = TRUE)
+  submit = TRUE, tmpdir = getwd())
 }
 \arguments{
 \item{f}{Any R function.}
@@ -34,6 +34,8 @@ Details below for more information.}
 
 \item{submit}{Whether or not to submit the job to the cluster with 
 \code{sbatch}; see Details below for more information.}
+
+\item{tmpdir}{Directory where the `_rslurm` project folder wil be created.}
 }
 \value{
 A \code{slurm_job} object containing the \code{jobname} and the number
@@ -76,10 +78,10 @@ status or output, and delete the temporary files associated with it. See the
 description of the related functions for more details.
 }
 \seealso{
-\code{\link{slurm_apply}} to parallelize a function over a parameter
-  set.
-
 \code{\link{cancel_slurm}}, \code{\link{cleanup_files}}, 
   \code{\link{get_slurm_out}} and \code{\link{print.slurm_job}} which use
   the output of this function.
+
+Other Slurm calls: \code{\link{slurm_apply}}
 }
+\concept{Slurm calls}
